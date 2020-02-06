@@ -1,0 +1,76 @@
+# In our server architecture, we want to separate static server and api server into 2 different services.
+# Event though we could have express server deliver both.
+# [This is probably to use CDNs/S3 buckers for static server, which are probably cheaper than ec2 instances]
+# Instead of separating the 2 servers by port on the same domain,
+# say port localhost:3000 for static and localhost:4000 for api, we separate them based on url.
+# i.e. static: / (e.g. /bundle.js) and api: /api (e.g. /api/values)
+# [This is because in prod the ports change often. The services we buy (aws, heroku) define them, not us.]
+# To manage the separation, we put an nginx server in front of the request,
+# which will route those to the appropriate server.
+version: '3'
+services:
+  postgres:
+    image: 'postgres:latest'
+  redis:
+    image: 'redis:latest'
+  # we could have called this router or whatever
+  nginx:
+    # we want nginx to be restarted => always running, because that's the public facing server
+    # We don't want the worker to restart, because it's computationaly too intense,
+    # and if it's broken, we don't want it to waste cpu cicles.
+    # [well if the worker is broken, then the app is useless mostly. What do we do then?
+    # Rely on the frontend handling the errors?
+    # what if api is down, or client? Why don't we want to restart those? How about postgress or redis?]
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      # map local machine's port 3050 (localhost:3050) to the container's port 80
+      - '3050:80'
+    # # if there was an upstream problem, this would help.
+    # depends_on:
+    #   - api
+    #   - client
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      context: './server'
+    volumes:
+      - /app/node_modules
+      - ./server:/app
+    environment:
+      # since we've named our redis container/service as "redis", we can use that as a host.
+      # docker will do the internal networking itself. (see notes for docker compose)
+      - REDIS_HOST=redis
+      # default redis port
+      - REDIS_PORT=6379
+      # "postgres" is the default user. [What does that mean? Is it not necessary?]
+      - PGUSER=postgres
+      # we named the service "postgres" above
+      - PGHOST=postgres
+      # "postgres" is the default database. [What does that mean? Is it not necessary?]
+      - PGDATABASE=postgres
+      # "postgres_password" is the default password. [What does that mean? Is it not necessary?]
+      - PGPASSWORD=postgres_password
+      # "5432" is the default port. [What does that mean? Is it not necessary?]
+      - PGPORT=5432
+    # depends_on:
+    #   - postgres
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      - /app/node_modules
+      - ./client:/app
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+      - /app/node_modules
+      - ./worker:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
