@@ -1,0 +1,31 @@
+services:
+  - docker
+
+before_install:
+  - docker build -t vahramj/react-test -f ./client/Docker.dev  ./client
+  # if we needed to test other subapp, e.g. server, worker, we would just add the build here
+  # - docker build myOtherProject
+
+# we are using dev build to run the tests
+script:
+  - docker run -e CI=true vahramj/react-test npm test
+  # and those others built above, would be run here
+  # - docker run myOtherProject
+
+# if script(s) run successfully => test passed, we build production version of our subprojects.
+after-success:
+  - docker build -t vahramj/multi-client ./client
+  - docker build -t vahramj/multi-nginx ./nginx
+  - docker build -t vahramj/multi-worker ./worker
+  - docker build -t vahramj/multi-server ./server
+
+  # log into docker-cli
+  # echo grabs the value of DOCKER_PASSWORD variable
+  # and, via stdin, pipes it to what comes next, i.e. docker-login
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  # pushing the prod built images to dockerhub
+  - docker push vahramj/multi-client
+  - docker push vahramj/multi-nginx
+  - docker push vahramj/multi-worker
+  - docker push vahramj/multi-server
