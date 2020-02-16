@@ -18,9 +18,10 @@ services:
     # we want nginx to be restarted => always running, because that's the public facing server
     # We don't want the worker to restart, because it's computationaly too intense,
     # and if it's broken, we don't want it to waste cpu cicles.
-    # [well if the worker is broken, then the app is useless mostly. What do we do then?
-    # Rely on the frontend handling the errors?
-    # what if api is down, or client? Why don't we want to restart those? How about postgress or redis?]
+    # Otherwise, e.g., if the worker is broken, user can still enter numbers and
+    # see the already calculated indexes. It makes sense to restart nginx,
+    # so that the the user can have access to other running services/containers
+    # assuming the client can handle failing requests sent to crashed worker.
     restart: always
     build:
       dockerfile: Dockerfile.dev

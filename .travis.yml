@@ -1,3 +1,6 @@
+# every time we push new code to github, all these steps will run.
+# if we don't want it, we can use the branch config.
+#i.e. "branches: only: -myBranchName" or "on: branch: myBranchName"
 services:
   - docker
 
@@ -29,3 +32,15 @@ after-success:
   - docker push vahramj/multi-nginx
   - docker push vahramj/multi-worker
   - docker push vahramj/multi-server
+
+deploy:
+  provider: elasticbeanstalk
+  region: us-east-1
+  app: multi-docker
+  env: MultiDocker-env
+  bucket_name: elasticbeanstalk-us-east-1-975710334054
+  bucket_path: multi-docker
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
