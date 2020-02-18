@@ -25,6 +25,9 @@
 	padding: 10px;
 }
 
+.title {
+	color: black;
+}
 .App-header a {
 	margin-right: 20px;
 }
