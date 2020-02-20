@@ -1,5 +1,5 @@
 FROM nginx
-# when we specify a target file name, i.t.c default.conf, we instruct it to be overwritten if exists
+# We are overriding the default default.conf file, if exists
 # [so not specifying the file name will do nothing if it exists?]
 # [the command in the docs is COPY nginx.conf /etc/nginx/nginx.conf, so what's conf.d??]
 COPY ./default.conf /etc/nginx/conf.d/default.conf
