@@ -28,7 +28,7 @@ pgClient.on('error', () => console.log('lost PG connection'));
 pgClient
 	.query('CREATE TABLE IF NOT EXISTS values (number INT)')
 	// If anything goes wrong while creating the table, we log it.
-	.catch(err => console.log(err));
+	.catch((err) => console.log(err));
 
 // Redis client setup
 const redis = require('redis');
@@ -96,6 +96,6 @@ app.post('/values', (req, res) => {
 	res.send({ working: true });
 });
 
-app.listen(5000, err => {
+app.listen(5000, (err) => {
 	console.log('Listening on part 5000');
 });

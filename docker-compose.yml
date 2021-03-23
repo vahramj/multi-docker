@@ -1,5 +1,5 @@
 # In our server architecture, we want to separate static server and api server into 2 different services.
-# Event though we could have express server deliver both.
+# Even though we could have express server deliver both.
 # [This is probably to use CDNs/S3 buckers for static server, which are probably cheaper than ec2 instances]
 # Instead of separating the 2 servers by port on the same domain,
 # say port localhost:3000 for static and localhost:4000 for api, we separate them based on url.
@@ -10,7 +10,9 @@
 version: '3'
 services:
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:12-alpine'
+    environment:
+      - POSTGRES_PASSWORD=postgres_password
   redis:
     image: 'redis:latest'
   # we could have called this router or whatever
@@ -56,8 +58,8 @@ services:
       - PGPASSWORD=postgres_password
       # "5432" is the default port. [What does that mean? Is it not necessary?]
       - PGPORT=5432
-    # depends_on:
-    #   - postgres
+    depends_on:
+      - postgres
   client:
     build:
       dockerfile: Dockerfile.dev
