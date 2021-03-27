@@ -25,10 +25,13 @@ pgClient.on('error', () => console.log('lost PG connection'));
 // we need to create a pg table to store the processed indexes in.
 // If a table named "values" does not already exist, we create one.
 // It has a single column named "number" of type INT
+
+// pgClient.on('connect', () => {
 pgClient
 	.query('CREATE TABLE IF NOT EXISTS values (number INT)')
 	// If anything goes wrong while creating the table, we log it.
 	.catch((err) => console.log(err));
+// });
 
 // Redis client setup
 const redis = require('redis');
